@@ -8,41 +8,68 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            padding: 50px;
+            margin: 40px;
         }
         input, button {
             margin: 10px;
             padding: 10px;
+            font-size: 16px;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            display: inline-block;
+            text-align: left;
         }
     </style>
 </head>
 <body>
-    <h2>Upload Resume</h2>
-    <input type="file" id="resume" accept=".pdf,.doc,.docx">
+
+    <h2>Resume Parser</h2>
+    <input type="file" id="resumeInput">
     <button onclick="uploadResume()">Upload</button>
-    
-    <h3>Extracted Data:</h3>
-    <pre id="output"></pre>
+
+    <div id="output"></div>
 
     <script>
         async function uploadResume() {
-            const fileInput = document.getElementById('resume');
-            if (fileInput.files.length === 0) {
-                alert('Please select a file!');
+            const fileInput = document.getElementById("resumeInput");
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("Please select a file.");
                 return;
             }
-            
+
             const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-            
-            const response = await fetch('https://your-backend-url.com/upload', {
-                method: 'POST',
-                body: formData
-            });
-            
-            const result = await response.json();
-            document.getElementById('output').textContent = JSON.stringify(result, null, 2);
+            formData.append("resume", file);
+
+            try {
+                const response = await fetch("https://your-backend-url.com/upload", {  // Replace with your actual API URL
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById("output").innerHTML = `
+                        <h3>Extracted Data:</h3>
+                        <p><b>Name:</b> ${data.name}</p>
+                        <p><b>Email:</b> ${data.email}</p>
+                        <p><b>Phone:</b> ${data.phone}</p>
+                    `;
+                } else {
+                    document.getElementById("output").innerHTML = `<p>Error: ${data.error}</p>`;
+                }
+
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById("output").innerHTML = `<p>Failed to connect to backend.</p>`;
+            }
         }
     </script>
+
 </body>
 </html>
